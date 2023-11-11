@@ -5,7 +5,7 @@ services:
   ports:
     - "8000:8000"
   volumes:
-    - ./myproject/sqlitedb:/code/sqlitedb
+    - ./myproject/sqlitedb/sqlitedata.db:/code/sqlitedb
 
 volumes:
   sqlite_API:
