@@ -53,7 +53,7 @@ jobs:
 
         - name: Build and deploy application container to Okteto Namespace
           if: ${{ github.event_name == 'push' }}
-          uses: okteto/deploy-stack@master
+          uses: okteto/deploy-stack@latest
           with:
             name: okteto-gymmemberapi-app
             build: true
