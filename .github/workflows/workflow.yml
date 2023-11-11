@@ -20,6 +20,7 @@ jobs:
         run: docker push ${{ secrets.DOCKER_USER }}/gymmembers-api-service:latest
   staging: 
     runs-on: ${{ secrets.DOCKER_USER }}/gymmembers-api-service:latest
+    name: Deploy container in OKTETO
     steps:
       - uses: okteto/context@latest
         with:
