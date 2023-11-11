@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 class GymBase(BaseModel):
     name: str
-    description: str | None = None
+    location: str
 
 
 class GymCreate(GymBase):

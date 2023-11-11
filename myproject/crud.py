@@ -27,19 +27,22 @@ def create_Person(db: Session, Person: schemas.PersonCreate):
 def delete_person(db: Session, person_id: int):
     db_person = db.query(models.Person).filter(models.Person.id == person_id).first()
 
+
     if db_person:
+        name = db_person.name
         db.delete(db_person)
         db.commit()
-        return True  # Indicate successful deletion
+        return f"{name} has been removed"  # Indicate successful deletion
     else:
-        return False  # Indicate person not found
+        return "Person not found"  # Indicate person not found
+
 
 def get_Gyms(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Gym).offset(skip).limit(limit).all()
 
 
 def create_gym(db: Session, gym: schemas.GymCreate):
-    db_gym = models.Gym(name=gym.name, description=gym.description)
+    db_gym = models.Gym(name=gym.name, location=gym.location)
     db.add(db_gym)
     db.commit()
     db.refresh(db_gym)
@@ -52,8 +55,6 @@ def assign_Person_to_Gym(db: Session, gym_id: int, Person_id: int):
 
     if not db_gym or not db_Person:
         return None  # Handle not found cases according to your requirements
-
-#TODO: if person.dbgym == db_gym is het FALSE dus de persoon zit al in die gym.
 
     db_Person.gyms.append(db_gym)
     db.commit()

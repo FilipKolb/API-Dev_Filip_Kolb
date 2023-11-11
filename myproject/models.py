@@ -20,7 +20,7 @@ class Gym(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
-    description = Column(String, index=True)
+    location = Column(String, index=True)
     member_id = Column(Integer, ForeignKey("Persons.id"))
 
     member = relationship("Person", back_populates="gyms")

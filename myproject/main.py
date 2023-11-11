@@ -59,17 +59,11 @@ def read_Gyms(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
 def create_Gym(gym: schemas.GymCreate, db: Session = Depends(get_db)):
     return crud.create_gym(db=db, gym=gym)
 
-@app.post("/Persons/{Person_id}/Gyms/", response_model=schemas.Gym)
-def create_Gym_for_Person(
-        Person_id: int, Gym: schemas.GymCreate, db: Session = Depends(get_db)
-):
-    return crud.create_Person_Gym(db=db, Gym=Gym, Person_id=Person_id)
-
 @app.post("/Gyms/{gym_id}/Persons/{Person_id}/", response_model=schemas.PersonGymAssignment)
 def assign_Person_to_Gym(gym_id: int, Person_id: int, db: Session = Depends(get_db)):
     return crud.assign_Person_to_Gym(db=db, gym_id=gym_id, Person_id=Person_id)
 
-@app.delete("/persons/{person_id}/", response_model=bool)
+@app.delete("/Persons/{person_id}/", response_model=str)
 def delete_person_api(person_id: int, db: Session = Depends(get_db)):
     result = crud.delete_person(db, person_id)
 
