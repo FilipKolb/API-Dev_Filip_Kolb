@@ -54,13 +54,10 @@ def assign_Person_to_Gym(db: Session, gym_id: int, Person_id: int):
     db_Person = db.query(models.Person).filter(models.Person.id == Person_id).first()
 
     if not db_gym or not db_Person:
-        return None  # Handle not found cases according to your requirements
+        return None  # Handle not found cases
 
     db_Person.gyms.append(db_gym)
     db.commit()
     db.refresh(db_gym)
 
     return {"Person": db_Person, "gym": db_gym}
-
-
-

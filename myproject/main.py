@@ -47,21 +47,33 @@ def read_Person(Person_id: int, db: Session = Depends(get_db)):
     return db_Person
 
 
-
 # Gyms
+
 
 @app.get("/Gyms/", response_model=list[schemas.Gym])
 def read_Gyms(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     Gyms = crud.get_Gyms(db, skip=skip, limit=limit)
     return Gyms
 
+
 @app.post("/Gyms/", response_model=schemas.Gym)
 def create_Gym(gym: schemas.GymCreate, db: Session = Depends(get_db)):
     return crud.create_gym(db=db, gym=gym)
 
+
 @app.post("/Gyms/{gym_id}/Persons/{Person_id}/", response_model=schemas.PersonGymAssignment)
 def assign_Person_to_Gym(gym_id: int, Person_id: int, db: Session = Depends(get_db)):
     return crud.assign_Person_to_Gym(db=db, gym_id=gym_id, Person_id=Person_id)
+
+
+@app.get("/Gyms/{gym_id}/Persons/{Person_id}/", response_model=schemas.PersonGymAssignment)
+def read_assigned_Person_to_Gym(gym_id: int, Person_id: int, db: Session = Depends(get_db)):
+    assigned_gym = crud.assign_Person_to_Gym(db, gym_id=gym_id, Person_id=Person_id)
+
+    if not assigned_gym:
+        raise HTTPException(status_code=404, detail="Person not found")
+
+    return assigned_gym
 
 @app.delete("/Persons/{person_id}/", response_model=str)
 def delete_person_api(person_id: int, db: Session = Depends(get_db)):
