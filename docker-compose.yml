@@ -1,7 +1,7 @@
 version: "3.9"
 services:
  gymmembers-api-service:
-  image: filipkolb/python-db-test
+  image: filipkolb/gymmembers-api-service
   ports:
     - "8000:8000"
   volumes:
