@@ -12,6 +12,4 @@ COPY ./myproject /code
 
 RUN mkdir -p /code/sqlitedb
 
-COPY $DB_PATH /code/sqlitedb
-
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

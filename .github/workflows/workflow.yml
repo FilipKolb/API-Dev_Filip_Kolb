@@ -6,8 +6,6 @@ jobs:
   delivery:
     runs-on: ubuntu-latest
     name: Deliver container
-    env:
-      DB_PATH: ./myproject/sqlitedb/
     steps:
       - name: Check out repository
         uses: actions/checkout@v1
