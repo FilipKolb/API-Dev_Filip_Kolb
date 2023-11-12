@@ -14,6 +14,6 @@ RUN mkdir -p /code/sqlitedb
 
 ENV DB_PATH=/code/sqlitedb/sqlitedatabase.db
 
-COPY ./myproject/sqlitedb/sqlitedatabase.db $DB_PATH
+COPY ./code/sqlitedb/sqlitedatabase.db $DB_PATH
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
