@@ -29,7 +29,6 @@ class PersonCreate(PersonBase):
 class Person(PersonBase):
     id: int
     is_active: bool
-    Gyms: list[Gym] = []
 
     class Config:
         orm_mode = True
