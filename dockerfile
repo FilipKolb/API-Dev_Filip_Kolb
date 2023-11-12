@@ -12,8 +12,6 @@ COPY ./myproject /code
 
 RUN mkdir -p /code/sqlitedb
 
-ENV DB_PATH=/code/sqlitedb/
-
-COPY ./myproject/sqlitedb/ $DB_PATH
+COPY $DB_PATH /code/sqlitedb
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
