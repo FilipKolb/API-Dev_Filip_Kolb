@@ -2,62 +2,71 @@ from sqlalchemy.orm import Session
 
 import models
 import schemas
+import auth
 
 
-
-def get_Person(db: Session, Person_id: int):
-    return db.query(models.Person).filter(models.Person.id == Person_id).first()
-
-
-def get_Person_by_email(db: Session, email: str):
-    return db.query(models.Person).filter(models.Person.email == email).first()
+def get_pokemon(db: Session, pokemon_id: int):
+    return db.query(models.Pokemon).filter(models.Pokemon.id == pokemon_id).first()
 
 
-def get_Persons(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Person).offset(skip).limit(limit).all()
+def get_pokemon_by_name(db: Session, name: str):
+    return db.query(models.Pokemon).filter(models.Pokemon.name == name).first()
 
 
-def create_Person(db: Session, Person: schemas.PersonCreate):
-    db_Person = models.Person(email=Person.email, name=Person.name)
-    db.add(db_Person)
+def get_pokemons(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Pokemon).offset(skip).limit(limit).all()
+
+
+def create_pokemon(db: Session, pokemon: schemas.PokemonCreate):
+    db_pokemon = models.Pokemon(name=pokemon.name, level=pokemon.level, type=pokemon.type)
+    db.add(db_pokemon)
     db.commit()
-    db.refresh(db_Person)
-    return db_Person
-
-def delete_person(db: Session, person_id: int):
-    db_person = db.query(models.Person).filter(models.Person.id == person_id).first()
+    db.refresh(db_pokemon)
+    return db_pokemon
 
 
-    if db_person:
-        name = db_person.name
-        db.delete(db_person)
+def delete_pokemon(db: Session, pokemon_id: int):
+    db_pokemon = db.query(models.Pokemon).filter(models.Pokemon.id == pokemon_id).first()
+
+    if db_pokemon:
+        name = db_pokemon.name
+        db.delete(db_pokemon)
         db.commit()
         return f"{name} has been removed"  # Indicate successful deletion
     else:
-        return "Person not found"  # Indicate person not found
+        return "Pokemon not found"  # Indicate Pokemon not found
 
 
-def get_Gyms(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Gym).offset(skip).limit(limit).all()
+def update_pokemon_level(db: Session, pokemon_id: int, new_level: int):
+    db_pokemon = db.query(models.Pokemon).filter(models.Pokemon.id == pokemon_id).first()
+
+    if db_pokemon:
+        db_pokemon.level = new_level
+        db.commit()
+        db.refresh(db_pokemon)
+        return db_pokemon
+    else:
+        return None  # Handle Pokemon not found case
 
 
-def create_gym(db: Session, gym: schemas.GymCreate):
-    db_gym = models.Gym(name=gym.name, location=gym.location)
-    db.add(db_gym)
+def create_trainer(db: Session, trainer: schemas.TrainerCreate):
+    hashed_password = auth.get_password_hash(trainer.password)
+    db_trainer = models.Trainer(name=trainer.name, hashed_password=hashed_password)
+    db.add(db_trainer)
     db.commit()
-    db.refresh(db_gym)
-    return db_gym
+    db.refresh(db_trainer)
+    return db_trainer
 
 
-def assign_Person_to_Gym(db: Session, gym_id: int, Person_id: int):
-    db_gym = db.query(models.Gym).filter(models.Gym.id == gym_id).first()
-    db_Person = db.query(models.Person).filter(models.Person.id == Person_id).first()
+def get_trainer(db: Session, trainer_id: int):
+    return db.query(models.Trainer).filter(models.Trainer.id == trainer_id).first()
 
-    if not db_gym or not db_Person:
-        return None  # Handle not found cases
+def get_trainer_by_name(db: Session, name: str):
+    print(f"Executing SQL query: SELECT * FROM Trainers WHERE name = '{name}'")
+    trainer = db.query(models.Trainer).filter(models.Trainer.name == name).first()
+    print(f"Retrieved trainer by name '{name}': {trainer}")
+    return trainer
 
-    db_Person.gyms.append(db_gym)
-    db.commit()
-    db.refresh(db_gym)
 
-    return {"Person": db_Person, "gym": db_gym}
+def get_trainers(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Trainer).offset(skip).limit(limit).all()

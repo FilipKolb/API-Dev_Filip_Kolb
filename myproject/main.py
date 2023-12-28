@@ -1,22 +1,28 @@
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
+import auth
 import crud
 import models
 import schemas
 from database import SessionLocal, engine
 import os
 
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+
 if not os.path.exists('.\sqlitedb'):
     os.makedirs('.\sqlitedb')
 
-# "sqlite:///./sqlitedb/sqlitedata.db"
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-
 # Dependency
+
+
 def get_db():
     db = SessionLocal()
     try:
@@ -25,61 +31,83 @@ def get_db():
         db.close()
 
 
-@app.post("/Persons/", response_model=schemas.Person)
-def create_Person(Person: schemas.PersonCreate, db: Session = Depends(get_db)):
-    db_Person = crud.get_Person_by_email(db, email=Person.email)
-    if db_Person:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    return crud.create_Person(db=db, Person=Person)
+@app.post("/pokemon/", response_model=schemas.Pokemon)
+def create_pokemon(pokemon: schemas.PokemonCreate, db: Session = Depends(get_db)):
+    db_pokemon = crud.get_pokemon_by_name(db, name=pokemon.name)
+    if db_pokemon:
+        raise HTTPException(status_code=400, detail="Pokemon name already registered")
+    return crud.create_pokemon(db=db, pokemon=pokemon)
 
 
-@app.get("/Persons/", response_model=list[schemas.Person])
-def read_Persons(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    Persons = crud.get_Persons(db, skip=skip, limit=limit)
-    return Persons
+@app.get("/pokemon/", response_model=list[schemas.Pokemon])
+def read_pokemons(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    pokemons = crud.get_pokemons(db, skip=skip, limit=limit)
+    return pokemons
 
 
-@app.get("/Persons/{Person_id}", response_model=schemas.Person)
-def read_Person(Person_id: int, db: Session = Depends(get_db)):
-    db_Person = crud.get_Person(db, Person_id=Person_id)
-    if db_Person is None:
-        raise HTTPException(status_code=404, detail="Person not found")
-    return db_Person
+@app.get("/pokemon/{pokemon_id}", response_model=schemas.Pokemon)
+def read_pokemon(pokemon_id: int, db: Session = Depends(get_db)):
+    db_pokemon = crud.get_pokemon(db, pokemon_id=pokemon_id)
+    if db_pokemon is None:
+        raise HTTPException(status_code=404, detail="Pokemon not found")
+    return db_pokemon
 
 
-# Gyms
-
-
-@app.get("/Gyms/", response_model=list[schemas.Gym])
-def read_Gyms(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    Gyms = crud.get_Gyms(db, skip=skip, limit=limit)
-    return Gyms
-
-
-@app.post("/Gyms/", response_model=schemas.Gym)
-def create_Gym(gym: schemas.GymCreate, db: Session = Depends(get_db)):
-    return crud.create_gym(db=db, gym=gym)
-
-
-@app.post("/Gyms/{gym_id}/Persons/{Person_id}/", response_model=schemas.PersonGymAssignment)
-def assign_Person_to_Gym(gym_id: int, Person_id: int, db: Session = Depends(get_db)):
-    return crud.assign_Person_to_Gym(db=db, gym_id=gym_id, Person_id=Person_id)
-
-
-@app.get("/Gyms/{gym_id}/Persons/{Person_id}/", response_model=schemas.PersonGymAssignment)
-def read_assigned_Person_to_Gym(gym_id: int, Person_id: int, db: Session = Depends(get_db)):
-    assigned_gym = crud.assign_Person_to_Gym(db, gym_id=gym_id, Person_id=Person_id)
-
-    if not assigned_gym:
-        raise HTTPException(status_code=404, detail="Person not found")
-
-    return assigned_gym
-
-@app.delete("/Persons/{person_id}/", response_model=str)
-def delete_person_api(person_id: int, db: Session = Depends(get_db)):
-    result = crud.delete_person(db, person_id)
+@app.delete("/pokemon/{pokemon_id}/", response_model=str)
+def delete_pokemon_api(pokemon_id: int, db: Session = Depends(get_db)):
+    result = crud.delete_pokemon(db, pokemon_id)
 
     if not result:
-        raise HTTPException(status_code=404, detail="Person not found")
+        raise HTTPException(status_code=404, detail="Pokemon not found")
 
     return result
+
+
+@app.put("/pokemon/{pokemon_id}/level", response_model=schemas.Pokemon)
+def update_pokemon_level(pokemon_id: int, level_update: schemas.PokemonUpdateLevel, db: Session = Depends(get_db)):
+    updated_pokemon = crud.update_pokemon_level(db=db, pokemon_id=pokemon_id, new_level=level_update.level)
+
+    if updated_pokemon:
+        return updated_pokemon
+    else:
+        raise HTTPException(status_code=404, detail="Pokemon not found")
+
+
+@app.post("/trainers/", response_model=schemas.Trainer)
+def create_trainer(trainer: schemas.TrainerCreate, db: Session = Depends(get_db)):
+    print(f"Created trainer: {trainer}")
+    return crud.create_trainer(db=db, trainer=trainer)
+
+# Endpoint to get a trainer by ID
+@app.get("/trainers/{trainer_id}", response_model=schemas.Trainer)
+def read_trainer_by_name(trainer_id: int, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+    db_trainer = crud.get_trainer(db, trainer_id)
+    if db_trainer is None:
+        raise HTTPException(status_code=404, detail="Trainer not found")
+    return db_trainer
+
+# Endpoint to get a list of trainers
+@app.get("/trainers/", response_model=list[schemas.Trainer])
+def read_trainers(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+    trainers = crud.get_trainers(db, skip=skip, limit=limit)
+    return trainers
+
+
+@app.post("/token")
+def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    print(f"Trying to authenticate with username: {form_data.username} and password: {form_data.password}")
+    #Try to authenticate the user
+    trainer = auth.authenticate_trainer(db, form_data.username, form_data.password)
+    print(f"Authenticated trainer: {trainer}")
+    if not trainer:
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    # Add the JWT case sub with the subject(user)
+    access_token = auth.create_access_token(
+        data={"sub": trainer.name}
+    )
+    #Return the JWT as a bearer token to be placed in the headers
+    return {"access_token": access_token, "token_type": "bearer"}

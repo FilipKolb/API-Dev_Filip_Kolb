@@ -1,39 +1,41 @@
 from pydantic import BaseModel
 
 
-class GymBase(BaseModel):
+class PokemonBase(BaseModel):
     name: str
-    location: str
+    level: int
+    type: str
 
 
-class GymCreate(GymBase):
+class PokemonCreate(PokemonBase):
     pass
 
 
-class Gym(GymBase):
+class PokemonUpdateLevel(BaseModel):
+    level: int
+
+
+class Pokemon(PokemonBase):
     id: int
 
     class Config:
         orm_mode = True
 
-
-class PersonBase(BaseModel):
+class TrainerBase(BaseModel):
     name: str
-    email: str
 
+class TrainerCreate(TrainerBase):
+    password: str
 
-class PersonCreate(PersonBase):
-    pass
-
-
-class Person(PersonBase):
+class TrainerResponse(BaseModel):
     id: int
-    is_active: bool
+    name: str
 
     class Config:
         orm_mode = True
 
+class Trainer(TrainerBase):
+    id: int
 
-class PersonGymAssignment(BaseModel):
-    Person: Person
-    gym: Gym
+    class Config:
+        orm_mode = True

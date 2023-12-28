@@ -1,26 +1,26 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 
 from database import Base
 
 
-class Person(Base):
-    __tablename__ = "Persons"
+class Pokemon(Base):
+    __tablename__ = "Pokemons"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
-    email = Column(String, unique=True, index=True)
-    is_active = Column(Boolean, default=True)
+    level = Column(Integer)
+    type = Column(String, index=True)
 
-    gyms = relationship("Gym", back_populates="member")
+    trainer_id = Column(Integer, ForeignKey('Trainers.id'))
+    trainer = relationship("Trainer", back_populates="pokemons")
 
-
-class Gym(Base):
-    __tablename__ = "Gyms"
+class Trainer(Base):
+    __tablename__ = "Trainers"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
-    location = Column(String, index=True)
-    member_id = Column(Integer, ForeignKey("Persons.id"))
+    name = Column(String, unique=True, index=True)
+    hashed_password = Column(String)
 
-    member = relationship("Person", back_populates="gyms")
+    pokemons = relationship("Pokemon", back_populates="trainer")
+
